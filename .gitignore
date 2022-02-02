@@ -1,2 +1,5 @@
 venv
 creds.txt
+secrets.txt
+bearer.txt
+.vscode
