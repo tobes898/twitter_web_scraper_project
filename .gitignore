@@ -3,3 +3,4 @@ creds.txt
 secrets.txt
 bearer.txt
 .vscode
+__pycache__

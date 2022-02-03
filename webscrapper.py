@@ -3,7 +3,9 @@ from operator import eq
 import tweepy
 import os
 import json
-import win_notification
+
+from win_notification import WindowAlert
+# import win_notification
 # Variables for Keys and Tokens
 localConsumerKey = None
 localConsumerSecret = None
@@ -11,74 +13,78 @@ localAccessToken = None
 localTokenSecret = None
 localBearerToken = None
 
-# Filepath where keys and tokens are located on local machine
 credentialFilePath = 'creds.txt'
 secretsFilePath = 'secrets.txt'
 bearerFilePath = 'bearer.txt'
-# only run if file exists
-if os.path.isfile(credentialFilePath):
-    with open(credentialFilePath) as f:
-        localConsumerKey = f.readline().strip()
-        localConsumerSecret = f.readline().strip()
+
+
+def setAuthForTweepy():
+    if os.path.isfile(credentialFilePath):
+        with open(credentialFilePath) as f:
+            global localConsumerKey, localConsumerSecret
+            localConsumerKey = f.readline().strip()
+            localConsumerSecret = f.readline().strip()
     f.close()
 
 
-if os.path.isfile(secretsFilePath):
-    with open(secretsFilePath) as f:
-        localAccessToken = f.readline().strip()
-        localTokenSecret = f.readline().strip()
-f.close()
+    if os.path.isfile(secretsFilePath):
+        with open(secretsFilePath) as f:
+            global localAccessToken, localTokenSecret
+            localAccessToken = f.readline().strip()
+            localTokenSecret = f.readline().strip()
+    f.close()
 
-if os.path.isfile(bearerFilePath):
-    with open(bearerFilePath) as f:
-        localBearerToken = f.readline().strip()
-
-auth = tweepy.OAuthHandler(consumer_key=localConsumerKey, consumer_secret=localConsumerSecret)
-auth.set_access_token(localAccessToken, localTokenSecret)
-
-api = tweepy.API(auth)
-targeted_screen_name = 'LeBlorstOfTimes'
-user = api.get_user(screen_name = targeted_screen_name)
-print(user.id)
-client = tweepy.Client(localBearerToken,localConsumerKey,localConsumerSecret,localAccessToken,localTokenSecret)
+    if os.path.isfile(bearerFilePath):
+        with open(bearerFilePath) as f:
+            global localBearerToken
+            localBearerToken = f.readline().strip()
 
 
-# user_1 = client.get_user(username='towelthetank')
-# print(user_1)
-# print(user_1[:])
+def setupTweepyClient():
+    setAuthForTweepy()
+    return tweepy.Client(localBearerToken,localConsumerKey,localConsumerSecret,localAccessToken,localTokenSecret)
 
-# tweet = client.get_users_tweets(id=123276343, exclude=['retweets', 'replies'], since_id='1488934019169411085')
+def setupTweepyAPI():
+    setAuthForTweepy()
+    auth = tweepy.OAuthHandler(consumer_key=localConsumerKey, consumer_secret=localConsumerSecret)
+    auth.set_access_token(localAccessToken, localTokenSecret)
+    return tweepy.API(auth)
 
-# print(tweet)
-
-# print(tweet[0])
-
-# if localConsumerKey == None or localConsumerSecret == None:
-#     os._exit(1) 
-
-
-
- 
-# print(user.id)
-# public_tweets = api.home_timeline()
-# for tweet in public_tweets:
-#     print(tweet.text)
+def monitorTwitterAccount(screen_name):
+    api = setupTweepyAPI()
+# pip install win10toast
+    targeted_screen_name = screen_name
+    user = api.get_user(screen_name = targeted_screen_name)
+    print(user.id)
+    client = setupTweepyClient()
+    printer = TweetPrinter(localConsumerKey, localConsumerSecret, localAccessToken, localTokenSecret)
+    printer.setTargetAccount(targeted_screen_name)
+    printer.filter(follow = [user.id], filter_level='low')
 
 class TweetPrinter(tweepy.Stream):
+    targetAccount = ''
+    twitterClient = ''
+    notifyClass = None
+
+
+    def setTargetAccount(self, target_account):
+        global targetAccount, twitterClient, notifyClass
+        targetAccount = target_account
+        twitterClient = setupTweepyClient()
+        notifyClass =  WindowAlert()
 
     def on_data(self, status):
         data = json.loads(status)
         
         user = data['user']['screen_name']
         tweet_id = data['id']
-        tweet = client.get_tweet(id=tweet_id,)
-        if(user==targeted_screen_name):
-            win_notification.MyNotification(tweet[0])
-            print(tweet[0])
+        tweet = twitterClient.get_tweet(id=tweet_id)
 
-printer = TweetPrinter(localConsumerKey, localConsumerSecret, localAccessToken, localTokenSecret)
-printer.filter(follow = [user.id], filter_level='low')
+        if(user==targetAccount):
+            notifyClass.MyNotification(str(tweet[0]))
+            print(tweet[0])
 
 # tweet = client.get_tweet(id=1488985196955418625)
 # print(tweet[0])
 
+# monitorTwitterAccount()
