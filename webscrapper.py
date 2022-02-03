@@ -1,5 +1,3 @@
-from asyncio import constants
-from operator import eq
 import tweepy
 import os
 import json
