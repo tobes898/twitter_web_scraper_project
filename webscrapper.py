@@ -87,3 +87,17 @@ class TweetPrinter(tweepy.Stream):
 
 
 
+# getMultipleTimelines - takes in list of users and number of tweets to return for each
+# starting with the most recent. numOfTweets defaults to 5 if no value given
+def getMultipleTimelines(users, numOfTweets=5):
+    client = setupTweepyClient()
+    # return a list of users
+    user_data = client.get_users(usernames=users)
+    for user in user_data.data:
+        #TODO: might not be necessary, decide on this later
+        tweets = client.get_users_tweets(id=user['id'], max_results=numOfTweets)
+        num = 1
+        print(user['username'] + '\n__________')
+        for tweet in tweets.data:
+            print(str(num) + ':' + tweet['text'])
+            num+=1
