@@ -3,7 +3,7 @@ from operator import eq
 import tweepy
 import os
 import json
-
+import win_notification
 # Variables for Keys and Tokens
 localConsumerKey = None
 localConsumerSecret = None
@@ -37,8 +37,9 @@ auth = tweepy.OAuthHandler(consumer_key=localConsumerKey, consumer_secret=localC
 auth.set_access_token(localAccessToken, localTokenSecret)
 
 api = tweepy.API(auth)
-user = api.get_user(screen_name = '@CNN')
-#print(user.id)
+targeted_screen_name = 'LeBlorstOfTimes'
+user = api.get_user(screen_name = targeted_screen_name)
+print(user.id)
 client = tweepy.Client(localBearerToken,localConsumerKey,localConsumerSecret,localAccessToken,localTokenSecret)
 
 
@@ -70,8 +71,9 @@ class TweetPrinter(tweepy.Stream):
         
         user = data['user']['screen_name']
         tweet_id = data['id']
-        tweet = client.get_tweet(id=tweet_id)
-        if(user=='CNN'):
+        tweet = client.get_tweet(id=tweet_id,)
+        if(user==targeted_screen_name):
+            win_notification.MyNotification(tweet[0])
             print(tweet[0])
 
 printer = TweetPrinter(localConsumerKey, localConsumerSecret, localAccessToken, localTokenSecret)
