@@ -83,8 +83,3 @@ class TweetPrinter(tweepy.Stream):
         if(user==targetAccount):
             notifyClass.MyNotification(str(tweet[0]))
             print(tweet[0])
-
-# tweet = client.get_tweet(id=1488985196955418625)
-# print(tweet[0])
-
-# monitorTwitterAccount()
